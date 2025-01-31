@@ -1,0 +1,4 @@
+user_id,artist_id,searched_artist_count,artist_description_read_count,artist_link_open_count,style_description_read_count,style_image_view_styleguide_count,style_image_view_content_count,style_list_open_count,purchased_item_review_count,artist_styles
+1,101,2,1,3,1,0,0,1,0,"['Bohemian']"
+2,101,0,0,1,2,1,0,0,1,"['Psychedelic']"
+3,202,1,2,2,0,1,1,2,0,"['Rave','Trippy']"
