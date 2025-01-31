@@ -9,6 +9,3 @@ COMP3800 Practicum Course
 
 
 
-
-
-Fuck U
