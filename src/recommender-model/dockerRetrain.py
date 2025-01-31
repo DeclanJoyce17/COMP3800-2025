@@ -168,7 +168,7 @@ class HybridModel(tf.keras.Model):
     def predict_signature(self, user_tensor, artist_tensor, full_features_tensor):
         return self.call([user_tensor, artist_tensor, full_features_tensor])
 
-#model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
+model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
 model = HybridModel(num_users, num_artists, num_numeric_features, num_styles)
 model.compile(optimizer='adam', loss='binary_crossentropy')
