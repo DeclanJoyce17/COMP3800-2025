@@ -31,7 +31,7 @@ print(f"Using REST API URL: {rest_api_url}")
 
 # Function to fetch interaction events from REST API
 def fetch_all_interaction_events():
-    response = requests.get(f"{rest_api_url}/interaction-events")
+    response = requests.get(f"{rest_api_url}/interaction-event")
     response.raise_for_status()
     return response.json()
 
@@ -77,7 +77,7 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
         case "product_DESCRIPTION_READ":
             data[key]["product_description_read_count"] += 1
         case "product_SEARCHED":
-            data[key]["searched_product_count"] += 1
+            data[key]['searched_product_count'] += 2
         case "product_FAVOURITE":
             data[key]["product_favourite_count"] += 3
         case "product_PURCHASE":

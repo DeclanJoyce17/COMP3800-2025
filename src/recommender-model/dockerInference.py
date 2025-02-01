@@ -31,8 +31,8 @@ data['product_styles'] = data['product_styles'].apply(parse_styles)
 
 # Normalize the numerical features
 numeric_features = [
-    'searched_product_count', 'product_description_read_count', 'product_link_open_count',
-    'style_description_read_count', 'style_image_view_styleguide_count', 'style_image_view_content_count',
+    'product_view_count', 'product_description_read_count','searched_product_count', 'product_favourite_count','product_purchase_count','product_link_open_count',
+    'style_description_read_count', 'style_image_view_styleguide_count', 'style_image_view_content_count', 'product_added_to_cart_count',
     'style_list_open_count', 'purchased_item_review_count'
 ]
 data[numeric_features] = scaler.transform(data[numeric_features])
