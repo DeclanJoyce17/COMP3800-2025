@@ -31,14 +31,14 @@ def parse_styles(styles_str):
         print(f"Error parsing styles: {e}")
         return []
 
-train_data['artist_styles'] = train_data['artist_styles'].apply(parse_styles)
-retrain_data['artist_styles'] = retrain_data['artist_styles'].apply(parse_styles)
+train_data['product_styles'] = train_data['product_styles'].apply(parse_styles)
+retrain_data['product_styles'] = retrain_data['product_styles'].apply(parse_styles)
 
 combined_data = pd.concat([train_data, retrain_data], ignore_index=True)
 
 numeric_features = [
-    'searched_artist_count', 'artist_description_read_count', 'artist_link_open_count',
-    'style_description_read_count', 'style_image_view_styleguide_count', 'style_image_view_content_count',
+    'product_view_count', 'product_description_read_count','searched_product_count', 'product_favourite_count','product_purchase_count','product_link_open_count',
+    'style_description_read_count', 'style_image_view_styleguide_count', 'style_image_view_content_count', 'product_added_to_cart_count',
     'style_list_open_count', 'purchased_item_review_count'
 ]
 
@@ -47,33 +47,33 @@ scaler.fit(combined_data[numeric_features])
 combined_data[numeric_features] = scaler.transform(combined_data[numeric_features])
 
 # Update the MultiLabelBinarizer with the combined data
-mlb.fit(combined_data['artist_styles'])
-style_features = mlb.transform(combined_data['artist_styles'])
+mlb.fit(combined_data['product_styles'])
+style_features = mlb.transform(combined_data['product_styles'])
 full_features_matrix = np.hstack([combined_data[numeric_features].values, style_features])
 
 # Update the number of styles
 num_styles = len(mlb.classes_)
 
-# Update user and artist ID mappings
+# Update user and product ID mappings
 user_ids = combined_data['user_id'].astype('category').cat.codes.values
-artist_ids = combined_data['artist_id'].astype('category').cat.codes.values
+product_ids = combined_data['product_id'].astype('category').cat.codes.values
 labels = np.ones(len(user_ids))
 
 unique_user_ids = np.unique(user_ids)
-unique_artist_ids = np.unique(artist_ids)
+unique_product_ids = np.unique(product_ids)
 negative_samples = []
 
 for user_id in unique_user_ids:
-    positive_artists = artist_ids[user_ids == user_id]
-    negative_artists = np.setdiff1d(unique_artist_ids, positive_artists)
-    neg_samples_count = min(10, len(positive_artists), len(negative_artists))
+    positive_products = product_ids[user_ids == user_id]
+    negative_products = np.setdiff1d(unique_product_ids, positive_products)
+    neg_samples_count = min(10, len(positive_products), len(negative_products))
     if neg_samples_count > 0:
-        sampled_neg_artists = np.random.choice(negative_artists, size=neg_samples_count, replace=False)
+        sampled_neg_products = np.random.choice(negative_products, size=neg_samples_count, replace=False)
 
-        for neg_artist in sampled_neg_artists:
-            negative_samples.append([user_id, neg_artist, 0])
+        for neg_product in sampled_neg_products:
+            negative_samples.append([user_id, neg_product, 0])
 
-positive_samples = np.column_stack((user_ids, artist_ids, labels))
+positive_samples = np.column_stack((user_ids, product_ids, labels))
 negative_samples = np.array(negative_samples)
 
 # Ensure there are enough negative samples
@@ -81,10 +81,10 @@ if len(negative_samples) < len(positive_samples):
     additional_negative_samples = []
     while len(additional_negative_samples) < (len(positive_samples) - len(negative_samples)):
         user_id = np.random.choice(unique_user_ids)
-        negative_artists = np.setdiff1d(unique_artist_ids, artist_ids[user_ids == user_id])
-        if len(negative_artists) > 0:
-            neg_artist = np.random.choice(negative_artists)
-            additional_negative_samples.append([user_id, neg_artist, 0])
+        negative_products = np.setdiff1d(unique_product_ids, product_ids[user_ids == user_id])
+        if len(negative_products) > 0:
+            neg_product = np.random.choice(negative_products)
+            additional_negative_samples.append([user_id, neg_product, 0])
     negative_samples = np.vstack((negative_samples, additional_negative_samples))
 
 combined_samples = np.vstack((positive_samples, negative_samples))
@@ -92,31 +92,31 @@ np.random.shuffle(combined_samples)
 
 train_samples, test_samples = train_test_split(combined_samples, test_size=0.2, random_state=42)
 train_user_ids = train_samples[:, 0].astype(np.int32)
-train_artist_ids = train_samples[:, 1].astype(np.int32)
+train_product_ids = train_samples[:, 1].astype(np.int32)
 train_labels = train_samples[:, 2].astype(np.float32)
 test_user_ids = test_samples[:, 0].astype(np.int32)
-test_artist_ids = test_samples[:, 1].astype(np.int32)
+test_product_ids = test_samples[:, 1].astype(np.int32)
 test_labels = test_samples[:, 2].astype(np.float32)
 
-train_full_features = np.vstack([full_features_matrix[train_artist_ids]])
-test_full_features = np.vstack([full_features_matrix[test_artist_ids]])
+train_full_features = np.vstack([full_features_matrix[train_product_ids]])
+test_full_features = np.vstack([full_features_matrix[test_product_ids]])
 
 # Redefine the model to update the embedding layers
 num_users = len(np.unique(user_ids))
-num_artists = len(np.unique(artist_ids))
+num_products = len(np.unique(product_ids))
 num_numeric_features = len(numeric_features)
 
 class HybridModel(tf.keras.Model):
-    def __init__(self, num_users, num_artists, num_numeric_features, num_styles, embedding_size=64, **kwargs):
+    def __init__(self, num_users, num_products, num_numeric_features, num_styles, embedding_size=64, **kwargs):
         super(HybridModel, self).__init__(**kwargs)  # Pass kwargs to parent class to handle Keras' internal params
         self.num_users = num_users
-        self.num_artists = num_artists
+        self.num_products = num_products
         self.num_numeric_features = num_numeric_features
         self.num_styles = num_styles
         self.embedding_size = embedding_size
         
         self.user_embedding = tf.keras.layers.Embedding(num_users, embedding_size, embeddings_initializer='he_normal')
-        self.artist_embedding = tf.keras.layers.Embedding(num_artists, embedding_size, embeddings_initializer='he_normal')
+        self.product_embedding = tf.keras.layers.Embedding(num_products, embedding_size, embeddings_initializer='he_normal')
         self.numeric_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
         self.style_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
         self.concat_layer = tf.keras.layers.Concatenate()
@@ -127,12 +127,12 @@ class HybridModel(tf.keras.Model):
         self.dense_final = tf.keras.layers.Dense(1, activation='sigmoid')
 
     def call(self, inputs):
-        user_id, artist_id, full_features = inputs
+        user_id, product_id, full_features = inputs
         user_vec = self.user_embedding(user_id)
-        artist_vec = self.artist_embedding(artist_id)
+        product_vec = self.product_embedding(product_id)
         numeric_feature_vec = self.numeric_features_layer(full_features[:, :self.num_numeric_features])
         style_feature_vec = self.style_features_layer(full_features[:, self.num_numeric_features:])
-        combined_features = self.concat_layer([user_vec, artist_vec, numeric_feature_vec, style_feature_vec])
+        combined_features = self.concat_layer([user_vec, product_vec, numeric_feature_vec, style_feature_vec])
         x = self.dropout(combined_features)
         x = self.hidden_1(x)
         x = self.hidden_2(x)
@@ -143,7 +143,7 @@ class HybridModel(tf.keras.Model):
         config = super(HybridModel, self).get_config()
         config.update({
             'num_users': self.num_users,
-            'num_artists': self.num_artists,
+            'num_products': self.num_products,
             'num_numeric_features': self.num_numeric_features,
             'num_styles': self.num_styles,
             'embedding_size': self.embedding_size
@@ -154,7 +154,7 @@ class HybridModel(tf.keras.Model):
     def from_config(cls, config):
         return cls(
             num_users=config['num_users'],
-            num_artists=config['num_artists'],
+            num_products=config['num_products'],
             num_numeric_features=config['num_numeric_features'],
             num_styles=config['num_styles'],
             embedding_size=config['embedding_size']
@@ -165,19 +165,19 @@ class HybridModel(tf.keras.Model):
         tf.TensorSpec(shape=(None,), dtype=tf.int32, name='input_2'),
         tf.TensorSpec(shape=(None, None), dtype=tf.float32, name='input_3')
     ])
-    def predict_signature(self, user_tensor, artist_tensor, full_features_tensor):
-        return self.call([user_tensor, artist_tensor, full_features_tensor])
+    def predict_signature(self, user_tensor, product_tensor, full_features_tensor):
+        return self.call([user_tensor, product_tensor, full_features_tensor])
 
 model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
-model = HybridModel(num_users, num_artists, num_numeric_features, num_styles)
+model = HybridModel(num_users, num_products, num_numeric_features, num_styles)
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
 # Retrain the model
-train_data = tf.data.Dataset.from_tensor_slices(((train_user_ids, train_artist_ids, train_full_features), train_labels))
+train_data = tf.data.Dataset.from_tensor_slices(((train_user_ids, train_product_ids, train_full_features), train_labels))
 train_data = train_data.shuffle(10000).batch(512)
 
-val_data = tf.data.Dataset.from_tensor_slices(((test_user_ids, test_artist_ids, test_full_features), test_labels))
+val_data = tf.data.Dataset.from_tensor_slices(((test_user_ids, test_product_ids, test_full_features), test_labels))
 val_data = val_data.batch(512)
 
 history = model.fit(train_data, epochs=10, validation_data=val_data)
