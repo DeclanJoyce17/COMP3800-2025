@@ -100,11 +100,11 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
 # Function to save data as CSV
 def save_data_as_csv(data, filename):
     fieldnames = [
-        "user_id", "product_id", "searched_product_count",  "product_favourite_count","product_purchase_count",
-        "product_added_to_cart_count", "product_description_read_count",
+        "user_id", "product_id", "searched_product_count", "product_description_read_count",
         "product_link_open_count", "style_description_read_count", "style_image_view_styleguide_count",
         "style_image_view_content_count", "style_list_open_count", "purchased_item_review_count",
-        "product_styles"
+        "product_styles", "product_favourite_count","product_purchase_count",
+        "product_added_to_cart_count",
     ]
 
     with open(filename, mode='w', newline='') as file:
