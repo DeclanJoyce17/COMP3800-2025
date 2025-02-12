@@ -22,7 +22,7 @@ def get_ip():
 ip_address = get_ip()
 print(f"Detected IP address: {ip_address}")
 
-if ip_address.startswith("127.") or ip_address.startswith("192.168.") or ip_address.startswith("10."):
+if ip_address.startswith("127.") or ip_address.startswith("192.168.") or ip_address.startswith("10.") or ip_address.startswith("172."):
     rest_api_url = os.getenv('LOCAL_REST_API_URL')
 else:
     rest_api_url = os.getenv('EC2_REST_API_URL')
@@ -73,27 +73,26 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
             "product_styles": set()
         }
 
-    match interaction_type:
-        case "product_DESCRIPTION_READ":
-            data[key]["product_description_read_count"] += 1
-        case "product_SEARCHED":
-            data[key]['searched_product_count'] += 2
-        case "product_FAVOURITE":
-            data[key]["product_favourite_count"] += 3
-        case "product_PURCHASE":
-            data[key]["product_purchase_count"] += 5
-        case "product_ADDED_TO_CART":
-            data[key]["product_added_to_cart_count"] += 3
-        case "product_LINK_OPEN":
-            data[key]["product_link_open_count"] += 2
-        case "STYLE_DESCRIPTION_READ":
-            data[key]["style_description_read_count"] += 1
-        case "STYLE_IMAGE_VIEW_STYLEGUIDE":
-            data[key]["style_image_view_styleguide_count"] += 1
-        case "STYLE_IMAGE_VIEW_CONTENT":
-            data[key]["style_image_view_content_count"] += 1
-        case "STYLE_LIST_OPEN":
-            data[key]["style_list_open_count"] += 1
+    if interaction_type == "product_DESCRIPTION_READ":
+        data[key]["product_description_read_count"] += 1
+    elif interaction_type == "product_SEARCHED":
+        data[key]['searched_product_count'] += 2
+    elif interaction_type == "product_FAVOURITE":
+        data[key]["product_favourite_count"] += 3
+    elif interaction_type == "product_PURCHASE":
+        data[key]["product_purchase_count"] += 5
+    elif interaction_type == "product_ADDED_TO_CART":
+        data[key]["product_added_to_cart_count"] += 3
+    elif interaction_type == "product_LINK_OPEN":
+        data[key]["product_link_open_count"] += 2
+    elif interaction_type == "STYLE_DESCRIPTION_READ":
+        data[key]["style_description_read_count"] += 1
+    elif interaction_type == "STYLE_IMAGE_VIEW_STYLEGUIDE":
+        data[key]["style_image_view_styleguide_count"] += 1
+    elif interaction_type == "STYLE_IMAGE_VIEW_CONTENT":
+        data[key]["style_image_view_content_count"] += 1
+    elif interaction_type == "STYLE_LIST_OPEN":
+        data[key]["style_list_open_count"] += 1
     
     data[key]["product_styles"].update(product_styles)
 
