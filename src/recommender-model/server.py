@@ -142,16 +142,34 @@ def get_top_n_recommendations(user_id, num_products, n=5):
 @app.route("/recommend", methods=["GET"])
 def recommend():
     user_id = request.args.get("user_id")
+    # default page
+    page = int(request.args.get("page", 1))
+    # number of products that are being shown on one page
+    limit = int(request.args.get("limit", 24))
+
     if not user_id:
         return jsonify({"error": "user_id is required"}), 400
 
     try:
-        top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=5)
-        return jsonify({"user_id": user_id, "recommendations": top_recommendations})
+        # computing scores for each products and getting top recommendations
+        num_recommendations = page * limit  # Ensure we get enough recommendations
+        top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=num_recommendations)
+
+        # sort the scores from decending order
+        # top_recommendations.sort(key=lambda x: x[0], reverse=True)
+        start_index = (page - 1) * limit
+        end_index = page * limit
+        paginated = top_recommendations[start_index:end_index]
+
+        return jsonify({"user_id": user_id,
+                        "page": page,
+                        "limit": limit,
+                        "recommendations": paginated})
+
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=4000, debug=True)
