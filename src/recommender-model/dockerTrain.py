@@ -182,7 +182,7 @@ class HybridModel(tf.keras.Model):
     def predict_signature(self, user_tensor, product_tensor, full_features_tensor):
         return self.call([user_tensor, product_tensor, full_features_tensor])
 
-model = HybridModel(num_users, num_products, len(numeric_features), num_styles)
+model = HybridModel(num_users, num_products, len(numeric_features), num_styles, num_colors)
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
 train_data = tf.data.Dataset.from_tensor_slices(((train_user_ids, train_product_ids, train_full_features), train_labels))
