@@ -16,6 +16,8 @@ with open('app/mlb.pkl', 'rb') as file:
 with open('app/num_styles.pkl', 'rb') as file:
     num_styles = pickle.load(file)
 
+with open('app/num_colors.pkl', 'rb') as file:
+    num_styles = pickle.load(file)
 # Load the dataset
 data = pd.read_csv('app/train.csv')
 
@@ -29,6 +31,8 @@ def parse_styles(styles_str):
 
 data['product_styles'] = data['product_styles'].apply(parse_styles)
 
+data['product_colors'] = data['product_colors'].apply(parse_styles)
+
 # Normalize the numerical features
 numeric_features = [
     'product_view_count', 'product_description_read_count','searched_product_count', 'product_favourite_count','product_purchase_count','product_link_open_count',
@@ -40,8 +44,10 @@ data[numeric_features] = scaler.transform(data[numeric_features])
 # Encode product styles
 style_features = mlb.transform(data['product_styles'])
 
+color_features = mlb.transform(data['product_colors'])
+
 # Prepare full feature matrix
-full_features_matrix = np.hstack([data[numeric_features].values, style_features])
+full_features_matrix = np.hstack([data[numeric_features].values, style_features, color_features])
 
 # Get user and product mappings
 user_id_mapping = {user_id: idx for idx, user_id in enumerate(data['user_id'].unique())}
@@ -54,18 +60,20 @@ full_features_matrix = np.tile(full_features_matrix, (num_products, 1))
 
 # Load the model
 class HybridModel(tf.keras.Model):
-    def __init__(self, num_users, num_products, num_numeric_features, num_styles, embedding_size=64, **kwargs):
+    def __init__(self, num_users, num_products, num_numeric_features, num_styles, num_colors, embedding_size=64, **kwargs):
         super(HybridModel, self).__init__(**kwargs)  # Pass kwargs to parent class to handle Keras' internal params
         self.num_users = num_users
         self.num_products = num_products
         self.num_numeric_features = num_numeric_features
         self.num_styles = num_styles
+        self.num_colors = num_colors
         self.embedding_size = embedding_size
         
         self.user_embedding = tf.keras.layers.Embedding(num_users, embedding_size, embeddings_initializer='he_normal')
         self.product_embedding = tf.keras.layers.Embedding(num_products, embedding_size, embeddings_initializer='he_normal')
         self.numeric_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
         self.style_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
+        self.color_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
         self.concat_layer = tf.keras.layers.Concatenate()
         self.dropout = tf.keras.layers.Dropout(0.4)
         self.hidden_1 = tf.keras.layers.Dense(128, activation='relu')
@@ -93,6 +101,7 @@ class HybridModel(tf.keras.Model):
             'num_products': self.num_products,
             'num_numeric_features': self.num_numeric_features,
             'num_styles': self.num_styles,
+            'num_colors': self.num_colors,
             'embedding_size': self.embedding_size
         })
         return config
@@ -104,6 +113,7 @@ class HybridModel(tf.keras.Model):
             num_products=config['num_products'],
             num_numeric_features=config['num_numeric_features'],
             num_styles=config['num_styles'],
+            num_colors=config['num_colors'],
             embedding_size=config['embedding_size']
         )
 

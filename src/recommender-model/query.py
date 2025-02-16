@@ -44,13 +44,14 @@ def aggregate_interaction_events(interaction_events):
         product_id = event.get("product", {}).get("id")
         interaction_type = event["type"]
         product_styles = [style["name"] for style in event.get("product", {}).get("productStyles", [])]
+        product_colors = [color["name"] for color in event.get("product", {}).get("productColors", [])]
 
-        aggregate_data(aggregated_data, user_id, product_id, interaction_type, product_styles)
+        aggregate_data(aggregated_data, user_id, product_id, interaction_type, product_styles, product_colors)
     
     return aggregated_data
 
 # Function to aggregate data
-def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
+def aggregate_data(data, user_id, product_id, interaction_type, product_styles, product_colors):
     if not user_id or not product_id:
         return
 
@@ -70,7 +71,8 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
             "style_image_view_content_count": 0,
             "style_list_open_count": 0,
             "purchased_item_review_count": 0,
-            "product_styles": set()
+            "product_styles": set(),
+            "product_colors": set()
         }
 
     match interaction_type:
@@ -96,6 +98,7 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
             data[key]["style_list_open_count"] += 1
     
     data[key]["product_styles"].update(product_styles)
+    data[key]["product_colors"].update(product_colors)
 
 # Function to save data as CSV
 def save_data_as_csv(data, filename):
@@ -103,7 +106,7 @@ def save_data_as_csv(data, filename):
         "user_id", "product_id", "searched_product_count", "product_description_read_count",
         "product_link_open_count", "style_description_read_count", "style_image_view_styleguide_count",
         "style_image_view_content_count", "style_list_open_count", "purchased_item_review_count",
-        "product_styles", "product_favourite_count","product_purchase_count",
+        "product_styles","product_colors", "product_favourite_count","product_purchase_count",
         "product_added_to_cart_count",
     ]
 
@@ -112,7 +115,8 @@ def save_data_as_csv(data, filename):
         writer.writeheader()
 
         for key, value in data.items():
-            value["product_styles"] = f"['{', '.join(value['product_styles'])}']"
+            value["product_styles"] = f"['{', '.join(value['product_styles'])}']",
+            value["product_colors"] = f"['{', '.join(value['product_colors'])}']"
             writer.writerow(value)
 
 # Main function to run the process

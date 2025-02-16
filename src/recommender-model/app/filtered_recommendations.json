@@ -1,0 +1,67 @@
+[
+    {
+        "User_ID": 1,
+        "Top_Recommendations": [
+            808,
+            404
+        ]
+    },
+    {
+        "User_ID": 2,
+        "Top_Recommendations": [
+            404,
+            808
+        ]
+    },
+    {
+        "User_ID": 3,
+        "Top_Recommendations": [
+            808,
+            404
+        ]
+    },
+    {
+        "User_ID": 4,
+        "Top_Recommendations": [
+            404
+        ]
+    },
+    {
+        "User_ID": 5,
+        "Top_Recommendations": [
+            404,
+            808
+        ]
+    },
+    {
+        "User_ID": 6,
+        "Top_Recommendations": [
+            808,
+            404
+        ]
+    },
+    {
+        "User_ID": 7,
+        "Top_Recommendations": [
+            808
+        ]
+    },
+    {
+        "User_ID": 8,
+        "Top_Recommendations": [
+            808
+        ]
+    },
+    {
+        "User_ID": 9,
+        "Top_Recommendations": [
+            808
+        ]
+    },
+    {
+        "User_ID": 10,
+        "Top_Recommendations": [
+            808
+        ]
+    }
+]
