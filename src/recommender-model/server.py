@@ -1,12 +1,17 @@
-from flask import Flask, request, jsonify
+import hashlib
+
+from flask import Flask, request, jsonify, session
 import pandas as pd
 import numpy as np
 import tensorflow as tf
 import pickle
 import ast
 from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
+from flask_session import Session  # For session management
 
 app = Flask(__name__)
+app.config["SESSION_TYPE"] = "filesystem"  # Store sessions on the server-side
+Session(app)
 
 # Load the trained model with the custom object
 with open('app/scaler.pkl', 'rb') as file:
@@ -138,38 +143,81 @@ def get_top_n_recommendations(user_id, num_products, n=5):
     top_indices = np.argsort(predictions.numpy().flatten())[-n:][::-1]
     return [int(list(product_id_mapping.keys())[i]) for i in top_indices]
 
+# generates a unique cursor hash for pagination based on the last product ID seen
+def generate_cursor(last_product_id):
+    # gets product id, converts it to a string and is then hashed using a secure
+    # hashing algorithm with 256 bits the hash becomes the next set of fetched recommendations
+    return hashlib.sha256(str(last_product_id).encode()).hexdigest()
+
 # Flask endpoint for recommendations
 @app.route("/recommend", methods=["GET"])
 def recommend():
     user_id = request.args.get("user_id")
-    # default page
-    page = int(request.args.get("page", 1))
-    # number of products that are being shown on one page
+    # page = int(request.args.get("page", 1))
+    # default number of products
     limit = int(request.args.get("limit", 24))
+    cursor = request.args.get("cursor")
 
     if not user_id:
         return jsonify({"error": "user_id is required"}), 400
 
-    try:
-        # computing scores for each products and getting top recommendations
-        num_recommendations = page * limit  # Ensure we get enough recommendations
-        top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=num_recommendations)
+    # checks if recommendations exist in the sessio, if not or if cursor is missing
+    # or not defined it generates a new set of recommendations
+    if "recommendations" not in session or cursor is None:
+        session["recommendations"] = get_top_n_recommendations(int(user_id), num_products)
+        # set was used used to keep track of all seen products without any duplicates
+        session["seen"] = set()
 
-        # sort the scores from decending order
-        # top_recommendations.sort(key=lambda x: x[0], reverse=True)
-        start_index = (page - 1) * limit
-        end_index = page * limit
-        paginated = top_recommendations[start_index:end_index]
+    recommendations = session["recommendations"]
+    seen = session["seen"]
 
-        return jsonify({"user_id": user_id,
-                        "page": page,
-                        "limit": limit,
-                        "recommendations": paginated})
+    # filters out previously seen recommendations
+    remaining_recommendations = [p for p in recommendations if p not in seen]
 
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    # shwon if all recommendations are shown and there are no more results
+    if not remaining_recommendations:
+        return jsonify({"message": "No more recommendations available"})
+
+    # determines the starting index of the products based on the cursor
+    start_index = 0 if cursor is None else recommendations.index(int(cursor)) + 1
+    paginated = remaining_recommendations[start_index: start_index + limit]
+
+    # Update seen products
+    seen.update(paginated)
+    session["seen"] = seen
+    session.modified = True # updates flask session
+
+    # generates a new cursor using the last product ID in the current batch
+    next_cursor = generate_cursor(paginated[-1]) if paginated else None
+
+    # returns the paginated recommendations along with the new cursor
+    return jsonify({
+        "user_id": user_id,
+        "limit": limit,
+        "recommendations": paginated,
+        "cursor": next_cursor
+    })
+
+    # try:
+    #     # computing scores for each products and getting top recommendations
+    #     num_recommendations = page * limit  # Ensure we get enough recommendations
+    #     top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=num_recommendations)
+    #
+    #     # sort the scores from decending order
+    #     # top_recommendations.sort(key=lambda x: x[0], reverse=True)
+    #     start_index = (page - 1) * limit
+    #     end_index = page * limit
+    #     paginated = top_recommendations[start_index:end_index]
+    #
+    #     return jsonify({"user_id": user_id,
+    #                     "page": page,
+    #                     "limit": limit,
+    #                     "recommendations": paginated})
+    #
+    # except ValueError as e:
+    #     return jsonify({"error": str(e)}), 404
+    # except Exception as e:
+    #     return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4000, debug=True)
