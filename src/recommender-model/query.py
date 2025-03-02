@@ -3,6 +3,7 @@ import requests
 import csv
 import socket
 from dotenv import load_dotenv
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,7 +34,8 @@ print(f"Using REST API URL: {rest_api_url}")
 def fetch_all_interaction_events():
     response = requests.get(f"{rest_api_url}/interaction-event")
     response.raise_for_status()
-    return response.json()
+    result = response.json()
+    return result['interactionEvents']
 
 # Aggregation logic
 def aggregate_interaction_events(interaction_events):
@@ -96,7 +98,7 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
     
     data[key]["product_styles"].update(product_styles)
 
-# Function to save data as CSV
+# Function to save interaction data as CSV
 def save_data_as_csv(data, filename):
     fieldnames = [
         "user_id", "product_id", "searched_product_count", "product_description_read_count",
@@ -114,10 +116,20 @@ def save_data_as_csv(data, filename):
             value["product_styles"] = f"['{', '.join(value['product_styles'])}']"
             writer.writerow(value)
 
+# Function to fetch products from REST API (could be changed to only fetch all new products since last update)
+def fetch_all_products():
+    response = requests.get(f"{rest_api_url}/products/recommender-data")
+    response.raise_for_status()
+    result = response.json()
+    return result['products']
+
 # Main function to run the process
 def main():
     interaction_events = fetch_all_interaction_events()
     aggregated_data = aggregate_interaction_events(interaction_events)
+    products = fetch_all_products()
+    # print(json.dumps(products, indent=2))
+    # print(len(products))
     
     filename = 'app/retrain.csv' if os.path.exists('app/train.csv') else 'app/train.csv'
     save_data_as_csv(aggregated_data, filename)
