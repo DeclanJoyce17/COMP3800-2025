@@ -23,7 +23,7 @@ def get_ip():
 ip_address = get_ip()
 print(f"Detected IP address: {ip_address}")
 
-if ip_address.startswith("127.") or ip_address.startswith("192.168.") or ip_address.startswith("10.") or ip_address.startswith("172.")::
+if ip_address.startswith("127.") or ip_address.startswith("192.168.") or ip_address.startswith("10.") or ip_address.startswith("172."):
     rest_api_url = os.getenv('LOCAL_REST_API_URL')
 else:
     rest_api_url = os.getenv('EC2_REST_API_URL')
