@@ -99,7 +99,7 @@ def aggregate_data(data, user_id, product_id, interaction_type, product_styles):
     data[key]["product_styles"].update(product_styles)
 
 # Function to save interaction data as CSV
-def save_data_as_csv(data, filename):
+def save_interaction_data_as_csv(data, filename):
     fieldnames = [
         "user_id", "product_id", "searched_product_count", "product_description_read_count",
         "product_link_open_count", "style_description_read_count", "style_image_view_styleguide_count",
@@ -123,16 +123,38 @@ def fetch_all_products():
     result = response.json()
     return result['products']
 
+def save_product_data_as_csv(data, filename):
+    fieldnames = [
+        "id", "createdAt", "updatedAt", "availability",
+        "bodyFitSectionId", "browseScore", "connectionType",
+        "price", "ratingValue", "reviewCount", "sellerId",
+        "artTypes", "bodyFitSections","bodyFitShapes","colors","productTypes",
+        "styles",
+    ]
+
+    with open(filename, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames, extrasaction='ignore', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writeheader()
+
+        for product in data:
+            product["artTypes"] = f"['{', '.join(artTypes['artType']['slug'] for artTypes in product['artTypes'])}']"
+            product["productTypes"] = f"['{', '.join(productTypes['productType']['slug'] for productTypes in product['productTypes'])}']"
+            product["colors"] = f"['{', '.join(colors['name'] for colors in product['colors'])}']"
+            # value["styles"] = f"['{', '.join(value['styles'])}']"
+            writer.writerow(product)
+
 # Main function to run the process
 def main():
     interaction_events = fetch_all_interaction_events()
     aggregated_data = aggregate_interaction_events(interaction_events)
+    
+    filename = 'app/retrain.csv' if os.path.exists('app/train.csv') else 'app/train.csv'
+    save_interaction_data_as_csv(aggregated_data, filename)
+    
     products = fetch_all_products()
     # print(json.dumps(products, indent=2))
     # print(len(products))
-    
-    filename = 'app/retrain.csv' if os.path.exists('app/train.csv') else 'app/train.csv'
-    save_data_as_csv(aggregated_data, filename)
+    save_product_data_as_csv(products, 'app/products.csv')
 
 if __name__ == "__main__":
     main()
