@@ -1,11 +1,11 @@
-user_id,product_id,searched_product_count,product_description_read_count,product_link_open_count,style_description_read_count,style_image_view_styleguide_count,style_image_view_content_count,style_list_open_count,purchased_item_review_count,product_favourite_count,product_added_to_cart_count,product_styles,product_view_count,product_purchase_count
-1,101,2,1,3,1,0,0,1,0,1,1,"['Bohemian']",6,1
-2,101,0,0,1,2,1,0,0,1,1,0,"['Psychedelic']",4,0
-3,202,1,2,2,0,1,1,2,0,0,0,"['Rave','Trippy']",8,1
-4,303,3,0,4,1,1,1,1,1,2,1,"['Abstract','Minimalist']",7,0
-5,404,2,1,2,2,0,0,0,0,1,0,"['Surrealism']",5,1
-6,505,0,3,1,1,2,2,2,1,0,1,"['Cubism','Futurism']",9,1
-7,606,1,0,3,0,1,1,1,0,0,0,"['Impressionism']",3,0
-8,707,2,2,2,1,1,1,1,1,2,2,"['Expressionism','Dadaism']",10,1
-9,808,1,1,0,2,0,1,0,1,1,0,"['Realism']",4,0
-10,909,3,2,1,0,1,2,2,0,0,1,"['Pop Art','Conceptual']",6,1
+user_id,product_id,searched_product_count,product_description_read_count,product_link_open_count,style_description_read_count,style_image_view_styleguide_count,style_image_view_content_count,style_list_open_count,purchased_item_review_count,product_favourite_count,product_added_to_cart_count,product_styles,product_colors,product_view_count,product_purchase_count
+1,101,2,1,3,1,0,0,1,0,1,1,"['Bohemian']","[''Red']",6,1
+2,102,0,0,1,2,1,0,0,1,1,0,"['Psychedelic']","['Blue','Green']",4,0
+3,202,1,2,2,0,1,1,2,0,0,0,"['Rave','Trippy']","['Purple']",8,1
+4,303,3,0,4,1,1,1,1,1,2,1,"['Abstract','Minimalist']","['Black','White']",7,0
+5,404,2,1,2,2,0,0,0,0,1,0,"['Surrealism']","['Yellow']",5,1
+6,505,0,3,1,1,2,2,2,1,0,1,"['Cubism','Futurism', 'Bohemian']","['Orange','Teal']",9,1
+7,606,1,0,3,0,1,1,1,0,0,0,"['Impressionism']","['Pink']",3,0
+8,707,2,2,2,1,1,1,1,1,2,2,"['Expressionism','Dadaism']","['Brown','Beige']",10,1
+9,808,1,1,0,2,0,1,0,1,1,0,"['Realism']","['Gray', 'Red']",4,0
+10,909,3,2,1,0,1,2,2,0,0,1,"['Pop Art','Conceptual']","['Cyan','Magenta']",6,1
