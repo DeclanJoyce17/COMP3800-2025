@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import ast
+import json
 from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
 from flask_session import Session
 
@@ -198,6 +199,28 @@ def recommend():
     #     return jsonify({"error": str(e)}), 404
     # except Exception as e:
     #     return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+
+# TESTING FILTERING STUFF BELOW
+@app.route("/filters", methods=["POST"])
+def save_filters():
+    try:
+        # Get JSON data from the request
+        filters = request.get_json()
+        
+        if not filters:
+            return jsonify({"error": "No filters provided"}), 400
+
+        # Save filters to a JSON file
+        with open("filters.json", "w") as json_file:
+            json.dump(filters, json_file, indent=4)
+        
+        # Return the exact JSON structure received
+        return jsonify(filters)
+    
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4000, debug=True)

@@ -1,0 +1,19 @@
+{
+    "artType": "fashion",
+    "colors": ["black", "purple"],
+    "colorOrAnd": "OR",
+    "fromMyFavorites": false,
+    "materials": ["velvet"],
+    "materialOrAnd": "OR",
+    "priceMax": 15000,
+    "priceMin": 5000,
+    "productTypes": ["accessories", "hoods", "hoodies"],
+    "sellerLocation": {
+      "city": "",
+      "state": "",
+      "country": ""
+    },
+    "styles": ["boho-streetwear", "funky-fusion"],
+    "styleOrAnd": "AND"
+}
+  
