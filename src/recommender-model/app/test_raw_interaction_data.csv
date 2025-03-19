@@ -1,0 +1,20 @@
+user_id,product_id,type,timestamp
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,search,2025-03-09 10:00
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,search,2025-03-09 10:01
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,view_product_description,2025-03-09 10:02
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,open_product_link,2025-03-09 10:03
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,open_product_link,2025-03-09 10:04
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,open_product_link,2025-03-09 10:05
+a1b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,purchase_product,2025-03-09 10:10
+a2b,bd1fc40e-5da6-4548-9931-ccd2dcf8a004,open_product_link,2025-03-09 10:15
+a3b,3f59e18f-c185-41f7-b110-811888a6e661,search,2025-03-09 10:20
+a3b,3f59e18f-c185-41f7-b110-811888a6e661,view_product_description,2025-03-09 10:21
+a3b,3f59e18f-c185-41f7-b110-811888a6e661,view_product_description,2025-03-09 10:22
+a4b,d52ea8c9-650e-4201-a83d-1aaf92a7a6c3,search,2025-03-09 10:30
+a4b,d52ea8c9-650e-4201-a83d-1aaf92a7a6c3,search,2025-03-09 10:31
+a4b,d52ea8c9-650e-4201-a83d-1aaf92a7a6c3,search,2025-03-09 10:32
+a4b,d52ea8c9-650e-4201-a83d-1aaf92a7a6c3,open_product_link,2025-03-09 10:33
+a4b,d52ea8c9-650e-4201-a83d-1aaf92a7a6c3,open_product_link,2025-03-09 10:34
+a5b,0130d6e6-a279-4510-a96f-5172a86c4e7d,search,2025-03-09 10:35
+a5b,0130d6e6-a279-4510-a96f-5172a86c4e7d,view_product_description,2025-03-09 10:36
+a5b,0130d6e6-a279-4510-a96f-5172a86c4e7d,open_product_link,2025-03-09 10:37

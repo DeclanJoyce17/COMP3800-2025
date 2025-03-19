@@ -34,6 +34,9 @@ def parse_styles(styles_str):
 
 data['product_styles'] = data['product_styles'].apply(parse_styles)
 
+# CHECK: product_styles column should be a list of strings
+print("product_styles type:", type(data['product_styles']))
+
 numeric_features = [
     'product_view_count', 'product_description_read_count', 'searched_product_count',
     'product_favourite_count', 'product_purchase_count', 'product_link_open_count',
