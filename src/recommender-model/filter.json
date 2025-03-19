@@ -1,0 +1,18 @@
+{
+    "artType": "fashion",
+    "colors": ["black,grey"],
+    "colorOrAnd": "OR",
+    "fromMyFavorites": false,
+    "materials": [],
+    "materialOrAnd": "OR",
+    "priceMax": null,
+    "priceMin": null,
+    "productTypes": [],
+    "sellerLocation": {
+      "city": "",
+      "state": "",
+      "country": ""
+    },
+    "styles": [],
+    "styleOrAnd": "AND"
+}
