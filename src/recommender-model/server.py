@@ -121,11 +121,13 @@ def recommend():
 
         # Initialize recommendations in session if not present
         if "recommendations" not in session or not cursor:
-            session["recommendations"] = get_top_n_recommendations(int(user_id), num_products, n=100)
+            session["recommendations"] = get_top_n_recommendations(user_id, num_products, n=100)
             session["seen"] = set()
 
         recommendations = session["recommendations"]
         seen = session["seen"]
+
+        # print(recommendations)
 
         # Use pagination module
         paginated_product_ids, next_cursor = paginate_recommendations(recommendations, seen, cursor, limit)

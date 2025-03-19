@@ -10,7 +10,7 @@ def decode_cursor(cursor, recommendations):
     try:
         last_seen_product_id = cursor.split('_')[0]  # Extract product_id
         for idx, (prod_id, _) in enumerate(recommendations):
-            if prod_id == int(last_seen_product_id):  # Ensure correct comparison
+            if prod_id == last_seen_product_id:  # Ensure correct comparison
                 return idx + 1  # Start from the next item
     except Exception as e:
         print(f"Cursor decode error: {e}")
