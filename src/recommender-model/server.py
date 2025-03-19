@@ -104,7 +104,7 @@ def get_top_n_recommendations(user_id, num_products, n=100):
     top_indices = np.argsort(predictions.flatten())[-n:][::-1]
     scores = predictions.flatten()[top_indices]
 
-    recommendations = (list(product_id_mapping.keys())[i] for i in top_indices]
+    recommendations = [list(product_id_mapping.keys())[i] for i in top_indices]
     return list(zip(recommendations, scores))
 
 
