@@ -1,11 +1,13 @@
-import hashlib
 from flask import Flask, request, jsonify, session
 import pandas as pd
 import numpy as np
 import tensorflow as tf
 import pickle
-from sklearn.preprocessing import MinMaxScaler
+import ast
+import json
+from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
 from flask_session import Session
+from pagination import paginate_recommendations  # Import the pagination logic
 
 app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
@@ -32,6 +34,9 @@ with open('app/input_shape.pkl', 'rb') as file:
     num_styles = input_shape[0] - 12  # 12 numeric features as defined in training
 
 data = pd.read_csv('app/train.csv')
+
+# CHECK: product_styles column should be a list of strings
+print("product_styles type:", type(data['product_styles']))
 
 # Define numeric features (consistent with training)
 numeric_features = [
@@ -105,7 +110,7 @@ def get_top_n_recommendations(user_id, num_products, n=num_products):
     product_tensor = tf.convert_to_tensor(all_product_ids, dtype=tf.int32)
     full_features_tensor = tf.convert_to_tensor(full_features_matrix, dtype=tf.float32)
 
-    predictions = model.predict([user_tensor, product_tensor, full_features_tensor])
+    predictions = model.predict([user_tensor, product_tensor, full_features_tensor], batch_size=128)
     top_indices = np.argsort(predictions.flatten())[-n:][::-1]
     scores = predictions.flatten()[top_indices]
 
@@ -146,25 +151,18 @@ def recommend():
             session["recommendations"] = get_top_n_recommendations(user_id, num_products, n=100)
             session["seen"] = set()
 
-        recommendations_with_scores = session["recommendations"]
+        recommendations = session["recommendations"]
         seen = session["seen"]
 
-        # Decode cursor to determine the starting index
-        start_index = decode_cursor(cursor)
+        # print(recommendations)
 
-        # Paginate the results
-        paginated = recommendations_with_scores[start_index:start_index + limit]
-
-        # Extract just the product IDs
-        paginated_product_ids = [rec[0] for rec in paginated]
+        # Use pagination module
+        paginated_product_ids, next_cursor = paginate_recommendations(recommendations, seen, cursor, limit)
 
         # Update seen products
         seen.update(paginated_product_ids)
         session["seen"] = seen
         session.modified = True
-
-        # Encode the next cursor
-        next_cursor = encode_cursor(start_index + limit, paginated[-1][1]) if paginated else None
 
         return jsonify({
             "user_id": user_id,
@@ -175,6 +173,29 @@ def recommend():
 
     except ValueError:
         return jsonify({"error": "Invalid user_id or cursor"}), 400
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+
+
+# TESTING FILTERING STUFF BELOW
+@app.route("/filters", methods=["POST"])
+def save_filters():
+    try:
+        # Get JSON data from the request
+        filters = request.get_json()
+        
+        if not filters:
+            return jsonify({"error": "No filters provided"}), 400
+
+        # Save filters to a JSON file
+        with open("filters.json", "w") as json_file:
+            json.dump(filters, json_file, indent=4)
+        
+        # Return the exact JSON structure received
+        return jsonify(filters)
+    
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
