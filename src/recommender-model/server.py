@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 import pickle
-import ast
-from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
+from sklearn.preprocessing import MinMaxScaler
 from flask_session import Session
 
 app = Flask(__name__)
@@ -19,22 +18,22 @@ with open('app/scaler.pkl', 'rb') as file:
 with open('app/mlb.pkl', 'rb') as file:
     mlb = pickle.load(file)
 
-with open('app/num_styles.pkl', 'rb') as file:
-    num_styles = pickle.load(file)
+with open('app/product_id_mapping.pkl', 'rb') as file:
+    product_id_mapping = pickle.load(file)
+
+with open('app/user_id_mapping.pkl', 'rb') as file:
+    user_id_mapping = pickle.load(file)
+
+with open('app/product_style_dict.pkl', 'rb') as file:
+    product_style_dict = pickle.load(file)
+
+with open('app/input_shape.pkl', 'rb') as file:
+    input_shape = pickle.load(file)
+    num_styles = input_shape[0] - 12  # 12 numeric features as defined in training
 
 data = pd.read_csv('app/train.csv')
 
-
-# Convert styles from strings to lists
-def parse_styles(styles_str):
-    try:
-        return ast.literal_eval(styles_str)
-    except Exception:
-        return []
-
-
-data['product_styles'] = data['product_styles'].apply(parse_styles)
-
+# Define numeric features (consistent with training)
 numeric_features = [
     'product_view_count', 'product_description_read_count', 'searched_product_count',
     'product_favourite_count', 'product_purchase_count', 'product_link_open_count',
@@ -42,17 +41,23 @@ numeric_features = [
     'style_image_view_content_count', 'product_added_to_cart_count',
     'style_list_open_count', 'purchased_item_review_count'
 ]
-data[numeric_features] = scaler.transform(data[numeric_features])
-style_features = mlb.transform(data['product_styles'])
-full_features_matrix = np.hstack([data[numeric_features].values, style_features])
 
-user_id_mapping = {user_id: idx for idx, user_id in enumerate(data['user_id'].unique())}
-product_id_mapping = {product_id: idx for idx, product_id in enumerate(data['product_id'].unique())}
+# Normalize the numerical features
+data[numeric_features] = scaler.transform(data[numeric_features])
+
+# Get number of users and products
 num_users = len(user_id_mapping)
 num_products = len(product_id_mapping)
 
-full_features_matrix = np.tile(full_features_matrix, (num_products, 1))
-
+# Prepare the full feature matrix for all products
+full_features_matrix = []
+for product_id in product_id_mapping.keys():
+    # For inference, assume no interaction (zero numeric features) for unseen user-product pairs
+    num_feats = np.zeros(len(numeric_features), dtype=np.float32)
+    style_feats = product_style_dict[product_id].astype(np.float32)
+    full_feats = np.hstack([num_feats, style_feats])
+    full_features_matrix.append(full_feats)
+full_features_matrix = np.array(full_features_matrix)
 
 class HybridModel(tf.keras.Model):
     def __init__(self, num_users, num_products, num_numeric_features, num_styles, embedding_size=64, **kwargs):
@@ -88,11 +93,9 @@ class HybridModel(tf.keras.Model):
         x = self.hidden_3(x)
         return self.dense_final(x)
 
-
 model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
-
-def get_top_n_recommendations(user_id, num_products, n=100):
+def get_top_n_recommendations(user_id, num_products, n=num_products):
     user_idx = user_id_mapping.get(user_id, -1)
     if user_idx == -1:
         return []
@@ -100,15 +103,14 @@ def get_top_n_recommendations(user_id, num_products, n=100):
     all_product_ids = np.arange(num_products, dtype=np.int32)
     user_tensor = tf.convert_to_tensor(np.full(shape=(num_products,), fill_value=user_idx, dtype=np.int32))
     product_tensor = tf.convert_to_tensor(all_product_ids, dtype=tf.int32)
-    full_features_tensor = tf.convert_to_tensor(full_features_matrix[:num_products], dtype=tf.float32)
+    full_features_tensor = tf.convert_to_tensor(full_features_matrix, dtype=tf.float32)
 
     predictions = model.predict([user_tensor, product_tensor, full_features_tensor])
     top_indices = np.argsort(predictions.flatten())[-n:][::-1]
     scores = predictions.flatten()[top_indices]
 
-    recommendations = [int(list(product_id_mapping.keys())[i]) for i in top_indices]
+    recommendations = [list(product_id_mapping.keys())[i] for i in top_indices]
     return list(zip(recommendations, scores))
-
 
 def decode_cursor(cursor):
     """Decode the cursor to get the offset."""
@@ -121,7 +123,6 @@ def decode_cursor(cursor):
     except (ValueError, IndexError):
         return 0
 
-
 def encode_cursor(offset, last_score):
     """Create a cursor for the next page."""
     if offset >= len(product_id_mapping):
@@ -129,7 +130,6 @@ def encode_cursor(offset, last_score):
     # Create a cursor that includes both the offset and a hash of the last score
     cursor_string = f"{offset}_{hashlib.sha256(str(last_score).encode()).hexdigest()[:8]}"
     return cursor_string
-
 
 @app.route("/recommend", methods=["GET"])
 def recommend():
@@ -143,7 +143,7 @@ def recommend():
 
         # Initialize recommendations in session if not present
         if "recommendations" not in session or not cursor:
-            session["recommendations"] = get_top_n_recommendations(int(user_id), num_products, n=100)
+            session["recommendations"] = get_top_n_recommendations(user_id, num_products, n=100)
             session["seen"] = set()
 
         recommendations_with_scores = session["recommendations"]
@@ -177,27 +177,6 @@ def recommend():
         return jsonify({"error": "Invalid user_id or cursor"}), 400
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-    # try:
-    #     # computing scores for each products and getting top recommendations
-    #     num_recommendations = page * limit  # Ensure we get enough recommendations
-    #     top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=num_recommendations)
-    #
-    #     # sort the scores from decending order
-    #     # top_recommendations.sort(key=lambda x: x[0], reverse=True)
-    #     start_index = (page - 1) * limit
-    #     end_index = page * limit
-    #     paginated = top_recommendations[start_index:end_index]
-    #
-    #     return jsonify({"user_id": user_id,
-    #                     "page": page,
-    #                     "limit": limit,
-    #                     "recommendations": paginated})
-    #
-    # except ValueError as e:
-    #     return jsonify({"error": str(e)}), 404
-    # except Exception as e:
-    #     return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4000, debug=True)
