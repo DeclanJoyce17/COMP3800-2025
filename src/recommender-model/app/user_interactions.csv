@@ -1,0 +1,6 @@
+user_id,product_id,event_type,product_price,product_category,timestamp,pro_vendor,instock
+123,456,view,19.99,Clothing,2025-03-18 12:34:56,0,1
+123,789,purchase,49.99,Electronics,2025-03-18 13:00:00,1,1
+456,123,add_to_cart,29.99,Home Decor,2025-03-18 14:15:30,0,1
+789,111,purchase,99.99,Electronics,2025-03-18 15:45:10,1,0
+123,222,view,14.99,Clothing,2025-03-18 16:10:05,0,0

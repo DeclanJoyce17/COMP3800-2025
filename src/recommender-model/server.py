@@ -4,11 +4,11 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import ast
-from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
+from rerank import rerank_recommendations  # Import the reranking function
 
 app = Flask(__name__)
 
-# Load the trained model with the custom object
+# Load preprocessing objects
 with open('app/scaler.pkl', 'rb') as file:
     scaler = pickle.load(file)
 
@@ -34,8 +34,9 @@ data['product_styles'] = data['product_styles'].apply(parse_styles)
 
 # Normalize the numerical features
 numeric_features = [
-    'product_view_count', 'product_description_read_count','searched_product_count', 'product_favourite_count','product_purchase_count','product_link_open_count',
-    'style_description_read_count', 'style_image_view_styleguide_count', 'style_image_view_content_count', 'product_added_to_cart_count',
+    'product_view_count', 'product_description_read_count', 'searched_product_count', 'product_favourite_count',
+    'product_purchase_count', 'product_link_open_count', 'style_description_read_count',
+    'style_image_view_styleguide_count', 'style_image_view_content_count', 'product_added_to_cart_count',
     'style_list_open_count', 'purchased_item_review_count'
 ]
 data[numeric_features] = scaler.transform(data[numeric_features])
@@ -58,13 +59,7 @@ full_features_matrix = np.tile(full_features_matrix, (num_products, 1))
 # Load the model
 class HybridModel(tf.keras.Model):
     def __init__(self, num_users, num_products, num_numeric_features, num_styles, embedding_size=64, **kwargs):
-        super(HybridModel, self).__init__(**kwargs)  # Pass kwargs to parent class to handle Keras' internal params
-        self.num_users = num_users
-        self.num_products = num_products
-        self.num_numeric_features = num_numeric_features
-        self.num_styles = num_styles
-        self.embedding_size = embedding_size
-        
+        super(HybridModel, self).__init__(**kwargs)
         self.user_embedding = tf.keras.layers.Embedding(num_users, embedding_size, embeddings_initializer='he_normal')
         self.product_embedding = tf.keras.layers.Embedding(num_products, embedding_size, embeddings_initializer='he_normal')
         self.numeric_features_layer = tf.keras.layers.Dense(embedding_size, activation='relu')
@@ -89,36 +84,6 @@ class HybridModel(tf.keras.Model):
         x = self.hidden_3(x)
         return self.dense_final(x)
 
-    def get_config(self):
-        config = super(HybridModel, self).get_config()
-        config.update({
-            'num_users': self.num_users,
-            'num_products': self.num_products,
-            'num_numeric_features': self.num_numeric_features,
-            'num_styles': self.num_styles,
-            'embedding_size': self.embedding_size
-        })
-        return config
-
-    @classmethod
-    def from_config(cls, config):
-        return cls(
-            num_users=config['num_users'],
-            num_products=config['num_products'],
-            num_numeric_features=config['num_numeric_features'],
-            num_styles=config['num_styles'],
-            embedding_size=config['embedding_size']
-        )
-
-    @tf.function(input_signature=[
-        tf.TensorSpec(shape=(None,), dtype=tf.int32, name='input_1'),
-        tf.TensorSpec(shape=(None,), dtype=tf.int32, name='input_2'),
-        tf.TensorSpec(shape=(None, None), dtype=tf.float32, name='input_3')
-    ])
-    def predict_signature(self, user_tensor, product_tensor, full_features_tensor):
-        return self.call([user_tensor, product_tensor, full_features_tensor])
-
-
 model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
 # Define the recommendation function
@@ -141,35 +106,12 @@ def get_top_n_recommendations(user_id, num_products, n=5):
 # Flask endpoint for recommendations
 @app.route("/recommend", methods=["GET"])
 def recommend():
-    user_id = request.args.get("user_id")
-    # default page
-    page = int(request.args.get("page", 1))
-    # number of products that are being shown on one page
-    limit = int(request.args.get("limit", 24))
+    user_id = int(request.args.get("user_id", 0))
+    num_recommendations = 50
+    top_recommendations = get_top_n_recommendations(user_id, num_products, n=num_recommendations)
+    reranked_recommendations = rerank_recommendations(user_id, top_recommendations)
 
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
-
-    try:
-        # computing scores for each products and getting top recommendations
-        num_recommendations = page * limit  # Ensure we get enough recommendations
-        top_recommendations = get_top_n_recommendations(int(user_id), num_products, n=num_recommendations)
-
-        # sort the scores from decending order
-        # top_recommendations.sort(key=lambda x: x[0], reverse=True)
-        start_index = (page - 1) * limit
-        end_index = page * limit
-        paginated = top_recommendations[start_index:end_index]
-
-        return jsonify({"user_id": user_id,
-                        "page": page,
-                        "limit": limit,
-                        "recommendations": paginated})
-
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    return jsonify({"user_id": user_id, "recommendations": reranked_recommendations[:10]})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4000, debug=True)

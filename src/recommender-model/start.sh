@@ -14,8 +14,8 @@ initial_setup() {
 # Check if it's the first run
 initial_setup
 
-# Write out the cron job to a temporary file
-echo "* * * * * /usr/bin/python /app/recommenderApp.py >> /var/log/cron.log 2>&1" > /etc/cron.d/recommender_cron
+# Write out the cron job to a temporary file to run once a week (every Sunday at midnight)
+echo "0 0 * * 0 /usr/bin/python /app/recommenderApp.py >> /var/log/cron.log 2>&1" > /etc/cron.d/recommender_cron
 
 # Give execution rights to the cron job file
 chmod 0644 /etc/cron.d/recommender_cron
