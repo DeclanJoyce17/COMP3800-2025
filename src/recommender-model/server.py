@@ -8,6 +8,7 @@ import json
 from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
 from flask_session import Session
 from pagination import paginate_recommendations  # Import the pagination logic
+from rerank import rerank_recommendations  # Import reranking function
 
 app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
@@ -126,14 +127,25 @@ def recommend():
         if "recommendations" not in session or not cursor:
             session["recommendations"] = get_top_n_recommendations(user_id, num_products, n=100)
             session["seen"] = set()
+            
 
         recommendations = session["recommendations"]
         seen = session["seen"]
 
-        # print(recommendations)
+        for product in recommendations:
+            print(product)
+
+        reranked_recommendation = rerank_recommendations(user_id, recommendations)
+
+        print("Reranked Recommendations:")
+
+        for product in reranked_recommendation:
+            print(product)
 
         # Use pagination module
-        paginated_product_ids, next_cursor = paginate_recommendations(recommendations, seen, cursor, limit)
+        paginated_product_ids, next_cursor = paginate_recommendations(reranked_recommendation, seen, cursor, limit)
+
+        print(paginated_product_ids)
 
         # Update seen products
         seen.update(paginated_product_ids)
