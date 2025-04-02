@@ -1,0 +1,11 @@
+user_id,product_id,searched_product_count,product_description_read_count,product_link_open_count,style_description_read_count,style_image_view_styleguide_count,style_image_view_content_count,style_list_open_count,purchased_item_review_count,product_favourite_count,product_added_to_cart_count,product_styles,product_view_count,product_purchase_count
+"f3751c0d-838f-47a8-b10e-492666d443c8","bd1fc40e-5da6-4548-9931-ccd2dcf8a004",2,1,3,1,0,0,1,0,1,1,"['Bohemian']",6,1
+"f3751c0d-838f-47a8-b10e-492666d443c8","bd1fc40e-5da6-4548-9931-ccd2dcf8a004",0,0,1,2,1,0,0,1,1,0,"['Bohemian']",4,0
+"f3751c0d-838f-47a8-b10e-492666d443c8","3f59e18f-c185-41f7-b110-811888a6e661",1,2,2,0,1,1,2,0,0,0,"['Rave','Trippy']",8,1
+"f3751c0d-838f-47a8-b10e-492666d443c8","d52ea8c9-650e-4201-a83d-1aaf92a7a6c3",3,0,4,1,1,1,1,1,2,1,"['Abstract','Minimalist']",7,0
+"f3751c0d-838f-47a8-b10e-492666d443c8","0130d6e6-a279-4510-a96f-5172a86c4e7d",2,1,2,2,0,0,0,0,1,0,"['Surrealism']",5,1
+"f3751c0d-838f-47a8-b10e-492666d443c8","7b60c6bc-412d-45db-9528-d6c9fe429f59",0,3,1,1,2,2,2,1,0,1,"['Cubism','Futurism']",9,1
+"f3751c0d-838f-47a8-b10e-492666d443c8","66d6efb2-732e-42a9-93e5-1f3fba9051c4",1,0,3,0,1,1,1,0,0,0,"['Impressionism']",3,0
+"f3751c0d-838f-47a8-b10e-492666d443c8","c3339f2e-d20c-45cd-835d-109629fe53cf",2,2,2,1,1,1,1,1,2,2,"['Expressionism','Dadaism']",10,1
+"f3751c0d-838f-47a8-b10e-492666d443c8","dbdf463e-9551-4012-8b01-7f1317084d28",1,1,0,2,0,1,0,1,1,0,"['Realism']",4,0
+"f3751c0d-838f-47a8-b10e-492666d443c8","cbf406f5-151d-4765-acda-c0b5d702896d",3,2,1,0,1,2,2,0,0,1,"['Pop Art','Conceptual']",6,1
