@@ -211,5 +211,17 @@ def save_filters():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+@app.route('/filtered_data', methods=['GET'])
+def get_data():
+    try:
+        # Load the CSV file
+        df = pd.read_csv('filtered_products.csv')  # Change 'data.csv' to your actual file
+        
+        # Convert DataFrame to JSON
+        data = df.to_dict(orient='records')
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4000, debug=True)

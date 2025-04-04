@@ -1,18 +1,19 @@
 {
-    "artType": "fashion",
-    "colors": ["black,grey"],
-    "colorOrAnd": "OR",
-    "fromMyFavorites": false,
-    "materials": [],
-    "materialOrAnd": "OR",
-    "priceMax": null,
-    "priceMin": null,
-    "productTypes": [],
-    "sellerLocation": {
-      "city": "",
-      "state": "",
-      "country": ""
-    },
-    "styles": [],
-    "styleOrAnd": "AND"
+  "user_id": 1,
+  "artType": "",
+  "colors": [],
+  "colorOrAnd": "OR",
+  "fromMyFavorites": false,
+  "materials": [],
+  "materialOrAnd": "OR",
+  "priceMax": 100000000,
+  "priceMin": null,
+  "productTypes": [],
+  "sellerLocation": {
+    "city": "",
+    "state": "",
+    "country": ""
+  },
+  "styles": ["boho", "yoga", "sportsy"],
+  "styleOrAnd": "OR"
 }
