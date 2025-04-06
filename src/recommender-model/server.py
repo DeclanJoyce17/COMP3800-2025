@@ -39,7 +39,7 @@ with open('app/input_shape.pkl', 'rb') as file:
 data = pd.read_csv('app/train.csv')
 
 # CHECK: product_styles column should be a list of strings
-print("product_styles type:", type(data['product_styles']))
+# print("product_styles type:", type(data['product_styles']))
 
 # Define numeric features (consistent with training)
 numeric_features = [
@@ -227,12 +227,12 @@ def recommend():
         recommendations = session["recommendations"]
 
         products = read_csv("app/products.csv")
-        print(recommendations)
+        # print(recommendations)
         recommendations2 = filter_products(products, filters, seller_locations)
         #print(recommendations2)
         recommendations3 = map_recommended_products(recommendations2, recommendations)
-        print("Recommendations 3: ")
-        print(recommendations3)
+        # print("Recommendations 3: ")
+        # print(recommendations3)
         seen = session["seen"]
         #recommendations = recommendations3
         # for product in recommendations:

@@ -168,9 +168,9 @@ def rerank_recommendations(user_id, recommendations):
         
     reranked_products.sort(key=lambda x: x[2], reverse=True)
 
-    print("Reranked")
-    for product in reranked_products:
-        print(product)
+    # print("Reranked")
+    # for product in reranked_products:
+    #     print(product)
     
     return [(product[0], product[1]) for product in reranked_products]
 

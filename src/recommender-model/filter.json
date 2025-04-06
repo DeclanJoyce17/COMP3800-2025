@@ -1,15 +1,13 @@
 {
   "user_id": "f3751c0d-838f-47a8-b10e-492666d443c8",
   "artType": "fashion",
-  "colors": [
-    "Black"
-  ],
+  "colors": [],
   "colorOrAnd": "OR",
   "fromMyFavorites": false,
   "materials": [],
   "materialOrAnd": "OR",
-  "priceMax": 100000000000.0,
-  "priceMin": null,
+  "priceMax": 5000.0,
+  "priceMin": 0.0,
   "productTypes": [],
   "sellerLocation": {
     "city": "",
