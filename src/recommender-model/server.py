@@ -9,6 +9,8 @@ from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
 from flask_session import Session
 from pagination import paginate_recommendations  # Import the pagination logic
 from rerank import rerank_recommendations  # Import reranking function
+from filtering import filter_products, read_csv_to_dict, read_filters_from_json, map_recommended_products, read_csv
+
 
 app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
@@ -118,6 +120,39 @@ def get_top_n_recommendations(user_id, num_products, n=num_products):
     recommendations = [list(product_id_mapping.keys())[i] for i in top_indices]
     return list(zip(recommendations, scores))
 
+def turn_to_json(
+    user_id, art_type, colors, color_or_and, from_my_favorites,
+    materials, material_or_and, price_max, price_min, price_min_raw,
+    product_types, seller_city, seller_country, seller_state,
+    styles, style_or_and
+):
+    filters = {
+        "user_id": user_id,
+        "artType": art_type,
+        "colors": colors,
+        "colorOrAnd": color_or_and,
+        "fromMyFavorites": from_my_favorites,
+        "materials": materials,
+        "materialOrAnd": material_or_and,
+        "priceMax": price_max,
+        "priceMin": float(price_min_raw) if price_min_raw else None,
+        "productTypes": product_types,
+        "sellerLocation": {
+            "city": seller_city,
+            "state": seller_state,
+            "country": seller_country
+        },
+        "styles": styles,
+        "styleOrAnd": style_or_and
+    }
+
+    # Save to filter.json
+    with open("filter.json", "w") as f:
+        json.dump(filters, f, indent=2)
+
+    return filters
+
+
 def decode_cursor(cursor):
     """Decode the cursor to get the offset."""
     if not cursor:
@@ -128,6 +163,7 @@ def decode_cursor(cursor):
         return offset
     except (ValueError, IndexError):
         return 0
+
 
 def encode_cursor(offset, last_score):
     """Create a cursor for the next page."""
@@ -141,9 +177,44 @@ def encode_cursor(offset, last_score):
 def recommend():
     try:
         user_id = request.args.get("user_id")
+        
+        #add here
+        art_type = request.args.get("artType", "")
+        colors = request.args.getlist("colors")  # ?colors=red&colors=blue
+        color_or_and = request.args.get("colorOrAnd", "OR")
+        from_my_favorites = request.args.get("fromMyFavorites", "false").lower() == "true"
+        materials = request.args.getlist("materials")
+        material_or_and = request.args.get("materialOrAnd", "OR")
+
+        # Price range
+        price_min_raw = request.args.get("priceMin")
+        price_min = float(price_min_raw) if price_min_raw else None
+        price_max = float(request.args.get("priceMax", 100000000000.0))
+
+        # Product types
+        product_types = request.args.getlist("productTypes")
+
+        # Seller location (nested fields)
+        seller_city = request.args.get("sellerLocation.city", "")
+        seller_state = request.args.get("sellerLocation.state", "")
+        seller_country = request.args.get("sellerLocation.country", "")
+
+        # Styles
+        styles = request.args.getlist("styles")
+        style_or_and = request.args.get("styleOrAnd", "OR")
+        
+        turn_to_json(user_id, art_type, colors, color_or_and, from_my_favorites, materials,
+                                material_or_and, price_max, price_min, price_min_raw, product_types,
+                                  seller_city, seller_country, seller_state, styles, style_or_and)
+
+        filters = read_filters_from_json("filter.json")
+        #print(filters)
+        #print(user_id)
+        #print(filters)
+        seller_locations = read_csv_to_dict("app/sellerLocation.csv", "sellerId")
+        #print(seller_locations)
         limit = int(request.args.get("limit", 24))
         cursor = request.args.get("cursor")
-
         if not user_id:
             return jsonify({"error": "user_id is required"}), 400
 
@@ -154,33 +225,40 @@ def recommend():
             
 
         recommendations = session["recommendations"]
+
+        products = read_csv("app/products.csv")
+        print(recommendations)
+        recommendations2 = filter_products(products, filters, seller_locations)
+        #print(recommendations2)
+        recommendations3 = map_recommended_products(recommendations2, recommendations)
+        print("Recommendations 3: ")
+        print(recommendations3)
         seen = session["seen"]
+        #recommendations = recommendations3
+        # for product in recommendations:
+        #     print(product)
 
-        for product in recommendations:
-            print(product)
+        reranked_recommendation = rerank_recommendations(user_id, recommendations3)
 
-        reranked_recommendation = rerank_recommendations(user_id, recommendations)
+        # print("Reranked Recommendations:")
 
-        print("Reranked Recommendations:")
-
-        for product in reranked_recommendation:
-            print(product)
+        # for product in reranked_recommendation:
+        #     print(product)
 
         # Use pagination module
         paginated_product_ids, next_cursor = paginate_recommendations(reranked_recommendation, seen, cursor, limit)
-
-        print(paginated_product_ids)
+        # print(paginated_product_ids)
 
         # Update seen products
         seen.update(paginated_product_ids)
         session["seen"] = seen
         session.modified = True
-
+        
         return jsonify({
             "user_id": user_id,
             "limit": limit,
             "recommendations": paginated_product_ids,
-            "cursor": next_cursor
+            "cursor": next_cursor,
         })
 
     except ValueError:

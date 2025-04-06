@@ -48,43 +48,36 @@ def clean_list(value_list):
     return cleaned_list
 
 def filter_products(products, filters, seller_locations):
-    """Filters products based on criteria from filters."""
-    filtered_products = []
-    
+    """Filters products based on criteria from filters and returns a list of product IDs."""
+    filtered_product_ids = []
+
     for product in products:
         # Parse and clean necessary fields
         art_types = clean_list(parse_list(product.get("artTypes", "")))
         colors = clean_list(parse_list(product.get("colors", "")))
         materials = clean_list(parse_list(product.get("materials", "")))
         styles = clean_list(parse_list(product.get("styles", "")))
-        # Convert price safely
+
         try:
             price = int(product["price"])
         except (ValueError, KeyError):
-            price = 0  
-        # Apply filters
-            
+            price = 0
+
         seller_id = product["sellerId"]
         seller_info = seller_locations.get(seller_id, {})
 
         if filters.get("sellerLocation"):
             location_filter = filters["sellerLocation"]
-            
-            # Check for city match (if provided in the filter)
             if location_filter.get("city") and location_filter["city"].lower() != seller_info.get("city", "").lower():
                 continue
-            
-            # Check for state match (if provided in the filter)
             if location_filter.get("state") and location_filter["state"].lower() != seller_info.get("state", "").lower():
                 continue
-            
-            # Check for country match (if provided in the filter)
             if location_filter.get("country") and location_filter["country"].lower() != seller_info.get("country", "").lower():
                 continue
-        
+
         if filters.get("artType") and filters["artType"].lower() not in map(str.lower, art_types):
-            continue  # Skip if artType does not match
-        
+            continue
+
         if not matches_criteria(colors, filters.get("colors", []), filters.get("colorOrAnd", "OR")):
             continue
 
@@ -98,10 +91,30 @@ def filter_products(products, filters, seller_locations):
             continue
         if filters.get("priceMax") is not None and price > filters["priceMax"]:
             continue
+        filtered_product_ids.append(product["id"])
+    #print(filtered_product_ids)
+    return filtered_product_ids
 
-        filtered_products.append(product)
 
-    return filtered_products
+def map_recommended_products(filtered_ids, recommended_list):
+    """
+    Maps filtered product IDs to recommended product scores.
+
+    Parameters:
+    - filtered_ids: List of product IDs returned from filtering
+    - recommended_list: List of tuples (product_id, score)
+
+    Returns:
+    - A list of tuples (product_id, score) for matching recommended products
+    """
+    filtered_set = set(filtered_ids)  # For quick lookup
+    mapped = [
+        (prod_id, score)
+        for prod_id, score in recommended_list
+        if prod_id in filtered_set
+    ]
+    return mapped
+
 
 def read_csv(filename):
     """Reads a CSV file and returns a list of dictionaries."""
@@ -109,11 +122,21 @@ def read_csv(filename):
         reader = csv.DictReader(file)
         return [row for row in reader]
 
-def read_filters_from_json(filename):
-    """Reads filter criteria from a JSON file and extracts user_id."""
-    with open(filename, mode="r", encoding="utf-8") as file:
-        filters = json.load(file)
-    return filters, str(filters["user_id"])  # Convert user_id to string for consistency
+import json
+
+def read_filters_from_json(filepath):
+    """
+    Read filters from a JSON file and ensure it returns a dictionary.
+    """
+    with open(filepath, 'r') as f:
+        filters = json.load(f)
+    
+    if isinstance(filters, dict):
+        return filters
+    else:
+        raise ValueError("Filters file does not contain a valid dictionary.")
+
+
 
 
 def write_filtered_slugs_to_csv(filtered_products, user_id, filename="filtered_products.csv"):
@@ -130,13 +153,13 @@ def write_filtered_slugs_to_csv(filtered_products, user_id, filename="filtered_p
 
 # Load data
 products = read_csv("app/products.csv")  # CSV containing product data
-filters, user_id = read_filters_from_json("filter.json")  # JSON containing filters
+filters = read_filters_from_json("filter.json")  # JSON containing filters
 seller_locations = read_csv_to_dict("app/sellerLocation.csv", "sellerId")
 # Apply filtering
 filtered_results = filter_products(products, filters, seller_locations)
 
-write_filtered_slugs_to_csv(filtered_results, user_id)
+#write_filtered_slugs_to_csv(filtered_results, user_id)
 
-# Output results
+ # Output results
 for product in filtered_results:
-    print(product["id"])
+    print(product)

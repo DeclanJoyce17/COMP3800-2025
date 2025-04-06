@@ -1,14 +1,12 @@
 {
-  "user_id": "f3751c0d-838f-47a8-b10e-492666d443c8",
-  "artType": "fashion",
-  "colors": [
-    "Black"
-  ],
+  "user_id": 1,
+  "artType": "",
+  "colors": [],
   "colorOrAnd": "OR",
   "fromMyFavorites": false,
   "materials": [],
   "materialOrAnd": "OR",
-  "priceMax": 100000000000.0,
+  "priceMax": 100000000,
   "priceMin": null,
   "productTypes": [],
   "sellerLocation": {
@@ -16,6 +14,6 @@
     "state": "",
     "country": ""
   },
-  "styles": [],
+  "styles": ["boho", "yoga", "sportsy"],
   "styleOrAnd": "OR"
 }
