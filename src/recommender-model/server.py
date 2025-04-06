@@ -177,30 +177,33 @@ def encode_cursor(offset, last_score):
 def recommend():
     try:
         user_id = request.args.get("user_id")
-        
-        #add here
         art_type = request.args.get("artType", "")
-        colors = request.args.getlist("colors")  # ?colors=red&colors=blue
+        
+        # Split comma-separated values
+        colors_raw = request.args.get("colors", "")
+        colors = [c.strip() for c in colors_raw.split(",")] if colors_raw else []
+        
         color_or_and = request.args.get("colorOrAnd", "OR")
         from_my_favorites = request.args.get("fromMyFavorites", "false").lower() == "true"
-        materials = request.args.getlist("materials")
+        
+        materials_raw = request.args.get("materials", "")
+        materials = [m.strip() for m in materials_raw.split(",")] if materials_raw else []
+        
         material_or_and = request.args.get("materialOrAnd", "OR")
-
-        # Price range
+        
         price_min_raw = request.args.get("priceMin")
         price_min = float(price_min_raw) if price_min_raw else None
         price_max = float(request.args.get("priceMax", 100000000000.0))
 
-        # Product types
         product_types = request.args.getlist("productTypes")
 
-        # Seller location (nested fields)
         seller_city = request.args.get("sellerLocation.city", "")
         seller_state = request.args.get("sellerLocation.state", "")
         seller_country = request.args.get("sellerLocation.country", "")
 
-        # Styles
-        styles = request.args.getlist("styles")
+        styles_raw = request.args.get("styles", "")
+        styles = [s.strip() for s in styles_raw.split(",")] if styles_raw else []
+        
         style_or_and = request.args.get("styleOrAnd", "OR")
         
         turn_to_json(user_id, art_type, colors, color_or_and, from_my_favorites, materials,
