@@ -3,3 +3,4 @@
 .bat
 src/recommender-model/flask_session
 src/recommender-model/__pycache__
+src/recommender-model/app

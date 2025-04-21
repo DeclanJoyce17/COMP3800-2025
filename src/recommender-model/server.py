@@ -214,7 +214,7 @@ def recommend():
         #print(filters)
         #print(user_id)
         #print(filters)
-        seller_locations = read_csv_to_dict("app/sellerLocation.csv", "sellerId")
+        seller_locations = read_csv_to_dict('app/sellerLocation.csv', 'sellerId')
         #print(seller_locations)
         limit = int(request.args.get("limit", 24))
         cursor = request.args.get("cursor")
@@ -229,7 +229,7 @@ def recommend():
 
         recommendations = session["recommendations"]
 
-        products = read_csv("app/products.csv")
+        products = read_csv('app/products.csv')
         # print(recommendations)
         recommendations2 = filter_products(products, filters, seller_locations)
         #print(recommendations2)

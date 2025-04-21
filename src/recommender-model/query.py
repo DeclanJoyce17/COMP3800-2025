@@ -143,17 +143,20 @@ def save_product_data_as_csv(data, filename):
             # value["styles"] = f"['{', '.join(value['styles'])}']"
             writer.writerow(product)
 
+from pprint import pprint
 # Main function to run the process
 def main():
     interaction_events = fetch_all_interaction_events()
+    print(f"Fetched {len(interaction_events)} interaction events from the API.")
+    for ie in interaction_events:
+        if ie.get("sessionUser") or ie.get("sessionUserId"):
+            pprint(ie)
     aggregated_data = aggregate_interaction_events(interaction_events)
     
     filename = 'app/retrain.csv' if os.path.exists('app/train.csv') else 'app/train.csv'
     save_interaction_data_as_csv(aggregated_data, filename)
     
     products = fetch_all_products()
-    # print(json.dumps(products, indent=2))
-    # print(len(products))
     save_product_data_as_csv(products, 'app/products.csv')
 
 if __name__ == "__main__":
