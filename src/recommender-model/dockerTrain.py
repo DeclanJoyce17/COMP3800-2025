@@ -17,7 +17,7 @@ numeric_features = [
 
 ### Step 1: Load and Process Product Data
 # Load products.csv which contains all product information
-products_df = pd.read_csv('app/products.csv')
+products_df = pd.read_csv('/app/products.csv')
 # Convert string representations of lists in 'styles' column to actual lists
 products_df['styles'] = products_df['styles'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else [])
 
@@ -35,7 +35,7 @@ num_products = len(unique_product_ids)
 
 ### Step 2: Load and Process Interaction Data
 # Load train.csv which contains user-product interaction data
-train_df = pd.read_csv('app/train.csv')
+train_df = pd.read_csv('/app/train.csv')
 
 # Normalize interaction-specific numerical features
 scaler = MinMaxScaler().fit(train_df[numeric_features])
@@ -204,25 +204,25 @@ history = model.fit(train_data, epochs=150, validation_data=val_data)
 
 ### Step 9: Save the Model and Artifacts
 # Save the trained model
-model.save('app/hybrid_recommender_model.keras')
+model.save('/app/hybrid_recommender_model.keras')
 
 # Save preprocessing objects and mappings
-with open('app/scaler.pkl', 'wb') as file:
+with open('/app/scaler.pkl', 'wb') as file:
     pickle.dump(scaler, file)
 
-with open('app/mlb.pkl', 'wb') as file:
+with open('/app/mlb.pkl', 'wb') as file:
     pickle.dump(mlb, file)
 
-with open('app/product_id_mapping.pkl', 'wb') as file:
+with open('/app/product_id_mapping.pkl', 'wb') as file:
     pickle.dump(product_id_mapping, file)
 
-with open('app/user_id_mapping.pkl', 'wb') as file:
+with open('/app/user_id_mapping.pkl', 'wb') as file:
     pickle.dump(user_id_mapping, file)
 
-with open('app/product_style_dict.pkl', 'wb') as file:
+with open('/app/product_style_dict.pkl', 'wb') as file:
     pickle.dump(product_style_dict, file)
 
 # Save input shape for feature construction during prediction
 input_shape = (len(numeric_features) + num_styles,)
-with open('app/input_shape.pkl', 'wb') as file:
+with open('/app/input_shape.pkl', 'wb') as file:
     pickle.dump(input_shape, file)

@@ -4,7 +4,7 @@ import uuid
 from io import StringIO
 
 # Load products.csv into a DataFrame
-products_df = pd.read_csv('app/products.csv')
+products_df = pd.read_csv('/app/products.csv')
 
 # Specified seller ID
 specified_seller_id = "fe5b5102-1003-4811-ada4-04f543a044d9"
@@ -83,6 +83,6 @@ column_order = [
 train_df = train_df[column_order]
 
 # Save to CSV
-train_df.to_csv('app/train.csv', index=False)
+train_df.to_csv('/app/train.csv', index=False)
 
 print("New train.csv has been generated successfully with products from seller 'fe5b5102-1003-4811-ada4-04f543a044d9' having more positive interactions!")

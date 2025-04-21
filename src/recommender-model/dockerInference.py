@@ -6,27 +6,27 @@ import ast
 from sklearn.preprocessing import MinMaxScaler, MultiLabelBinarizer
 
 # Load the trained artifacts
-with open('app/scaler.pkl', 'rb') as file:
+with open('/app/scaler.pkl', 'rb') as file:
     scaler = pickle.load(file)
 
-with open('app/mlb.pkl', 'rb') as file:
+with open('/app/mlb.pkl', 'rb') as file:
     mlb = pickle.load(file)
 
-with open('app/product_id_mapping.pkl', 'rb') as file:
+with open('/app/product_id_mapping.pkl', 'rb') as file:
     product_id_mapping = pickle.load(file)
 
-with open('app/user_id_mapping.pkl', 'rb') as file:
+with open('/app/user_id_mapping.pkl', 'rb') as file:
     user_id_mapping = pickle.load(file)
 
-with open('app/product_style_dict.pkl', 'rb') as file:
+with open('/app/product_style_dict.pkl', 'rb') as file:
     product_style_dict = pickle.load(file)
 
-with open('app/input_shape.pkl', 'rb') as file:
+with open('/app/input_shape.pkl', 'rb') as file:
     input_shape = pickle.load(file)
     num_styles = input_shape[0] - 12  # 12 numeric features as defined in training
 
 # Load the dataset
-data = pd.read_csv('app/train.csv')
+data = pd.read_csv('/app/train.csv')
 
 # Define numeric features (consistent with training)
 numeric_features = [
@@ -117,7 +117,7 @@ class HybridModel(tf.keras.Model):
     def predict_signature(self, user_tensor, product_tensor, full_features_tensor):
         return self.call([user_tensor, product_tensor, full_features_tensor])
 
-model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
+model = tf.keras.models.load_model('/app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
 # Define the recommendation function
 def get_top_n_recommendations(user_id, num_products, n=5):
@@ -151,17 +151,17 @@ recommendations_5_df = pd.DataFrame(recommendations_5_list)
 recommendations_df = pd.DataFrame(recommendations_list)
 
 # Save to CSV
-recommendations_5_df.to_csv('app/top_5_recommendations.csv', index=False)
-recommendations_df.to_csv('app/top_n_recommendations.csv', index=False)
+recommendations_5_df.to_csv('/app/top_5_recommendations.csv', index=False)
+recommendations_df.to_csv('/app/top_n_recommendations.csv', index=False)
 print("Recommendations saved to app/top_5_recommendations.csv")
 print("Recommendations saved to app/top_n_recommendations.csv")
 
 # Save to JSON
 recommendations_5_json = recommendations_5_df.to_json(orient='records')
-with open('app/user_5_recommendations.json', 'w') as json_file:
+with open('/app/user_5_recommendations.json', 'w') as json_file:
     json_file.write(recommendations_5_json)
 print("Recommendations saved to app/user_5_recommendations.json")
 recommendations_json = recommendations_df.to_json(orient='records')
-with open('app/user_n_recommendations.json', 'w') as json_file:
+with open('/app/user_n_recommendations.json', 'w') as json_file:
     json_file.write(recommendations_json)
 print("Recommendations saved to app/user_n_recommendations.json")

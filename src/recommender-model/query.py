@@ -153,11 +153,11 @@ def main():
             pprint(ie)
     aggregated_data = aggregate_interaction_events(interaction_events)
     
-    filename = 'app/retrain.csv' if os.path.exists('app/train.csv') else 'app/train.csv'
+    filename = '/app/retrain.csv' if os.path.exists('/app/train.csv') else '/app/train.csv'
     save_interaction_data_as_csv(aggregated_data, filename)
     
     products = fetch_all_products()
-    save_product_data_as_csv(products, 'app/products.csv')
+    save_product_data_as_csv(products, '/app/products.csv')
 
 if __name__ == "__main__":
     main()

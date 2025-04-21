@@ -17,26 +17,26 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Load necessary files
-with open('app/scaler.pkl', 'rb') as file:
+with open('/app/scaler.pkl', 'rb') as file:
     scaler = pickle.load(file)
 
-with open('app/mlb.pkl', 'rb') as file:
+with open('/app/mlb.pkl', 'rb') as file:
     mlb = pickle.load(file)
 
-with open('app/product_id_mapping.pkl', 'rb') as file:
+with open('/app/product_id_mapping.pkl', 'rb') as file:
     product_id_mapping = pickle.load(file)
 
-with open('app/user_id_mapping.pkl', 'rb') as file:
+with open('/app/user_id_mapping.pkl', 'rb') as file:
     user_id_mapping = pickle.load(file)
 
-with open('app/product_style_dict.pkl', 'rb') as file:
+with open('/app/product_style_dict.pkl', 'rb') as file:
     product_style_dict = pickle.load(file)
 
-with open('app/input_shape.pkl', 'rb') as file:
+with open('/app/input_shape.pkl', 'rb') as file:
     input_shape = pickle.load(file)
     num_styles = input_shape[0] - 12  # 12 numeric features as defined in training
 
-data = pd.read_csv('app/train.csv')
+data = pd.read_csv('/app/train.csv')
 
 # CHECK: product_styles column should be a list of strings
 # print("product_styles type:", type(data['product_styles']))
@@ -101,7 +101,7 @@ class HybridModel(tf.keras.Model):
         x = self.hidden_3(x)
         return self.dense_final(x)
 
-model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
+model = tf.keras.models.load_model('/app/hybrid_recommender_model.keras', custom_objects={"HybridModel": HybridModel})
 
 def get_top_n_recommendations(user_id, num_products, n=num_products):
     user_idx = user_id_mapping.get(user_id, -1)
@@ -214,7 +214,7 @@ def recommend():
         #print(filters)
         #print(user_id)
         #print(filters)
-        seller_locations = read_csv_to_dict('app/sellerLocation.csv', 'sellerId')
+        seller_locations = read_csv_to_dict('/app/sellerLocation.csv', 'sellerId')
         #print(seller_locations)
         limit = int(request.args.get("limit", 24))
         cursor = request.args.get("cursor")
@@ -229,7 +229,7 @@ def recommend():
 
         recommendations = session["recommendations"]
 
-        products = read_csv('app/products.csv')
+        products = read_csv('/app/products.csv')
         # print(recommendations)
         recommendations2 = filter_products(products, filters, seller_locations)
         #print(recommendations2)

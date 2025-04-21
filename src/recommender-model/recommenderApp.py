@@ -16,12 +16,12 @@ if query_result.returncode != 0:
 print("Query script completed successfully.")
 
 # Check if train.csv exists in the current directory
-if not os.path.isfile('app/train.csv'):
+if not os.path.isfile('/app/train.csv'):
     print("train.csv does not exist in the current directory.")
     exit()
 
 # Load the data from train.csv
-train_data = pd.read_csv('app/train.csv')
+train_data = pd.read_csv('/app/train.csv')
 
 # Check the number of rows in the data
 if len(train_data) <= 20:
@@ -41,12 +41,12 @@ print("Retrain script completed successfully.")
 
 # Rename train.csv to the current date and move it to /app/archive
 current_date = datetime.now().strftime("%Y-%m-%d")
-archive_path = f'app/archive/train_{current_date}.csv'
-shutil.move('app/train.csv', archive_path)
+archive_path = f'/app/archive/train_{current_date}.csv'
+shutil.move('/app/train.csv', archive_path)
 print(f"train.csv has been renamed to {archive_path} and moved to app/archive.")
 
 # Rename retrain.csv to train.csv
-shutil.move('app/retrain.csv', 'app/train.csv')
+shutil.move('/app/retrain.csv', '/app/train.csv')
 print("retrain.csv has been renamed to train.csv.")
 
 print("Process completed successfully.")

@@ -72,31 +72,31 @@ class HybridModel(tf.keras.Model):
         )
 
 # Step 1: Load existing artifacts
-with open('app/scaler.pkl', 'rb') as file:
+with open('/app/scaler.pkl', 'rb') as file:
     scaler = pickle.load(file)
-with open('app/mlb.pkl', 'rb') as file:
+with open('/app/mlb.pkl', 'rb') as file:
     mlb = pickle.load(file)
-with open('app/user_id_mapping.pkl', 'rb') as file:
+with open('/app/user_id_mapping.pkl', 'rb') as file:
     old_user_id_mapping = pickle.load(file)
-with open('app/product_id_mapping.pkl', 'rb') as file:
+with open('/app/product_id_mapping.pkl', 'rb') as file:
     old_product_id_mapping = pickle.load(file)
-with open('app/product_style_dict.pkl', 'rb') as file:
+with open('/app/product_style_dict.pkl', 'rb') as file:
     old_product_style_dict = pickle.load(file)
-with open('app/input_shape.pkl', 'rb') as file:
+with open('/app/input_shape.pkl', 'rb') as file:
     input_shape = pickle.load(file)
 
 # Load the existing model
-old_model = tf.keras.models.load_model('app/hybrid_recommender_model.keras', custom_objects={'HybridModel': HybridModel})
+old_model = tf.keras.models.load_model('/app/hybrid_recommender_model.keras', custom_objects={'HybridModel': HybridModel})
 
 # Step 2: Load and process updated product data
-products_df = pd.read_csv('app/products.csv')
+products_df = pd.read_csv('/app/products.csv')
 products_df['styles'] = products_df['styles'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else [])
 style_features_all = mlb.transform(products_df['styles'])  # Use existing MLB, new styles ignored
 product_style_dict = dict(zip(products_df['id'], style_features_all))
 
 # Step 3: Load and combine interaction data
-train_df = pd.read_csv('app/train.csv')
-retrain_df = pd.read_csv('app/retrain.csv')
+train_df = pd.read_csv('/app/train.csv')
+retrain_df = pd.read_csv('/app/retrain.csv')
 combined_df = pd.concat([train_df, retrain_df], ignore_index=True)
 
 # Normalize numerical features using existing scaler
@@ -211,16 +211,16 @@ val_data = tf.data.Dataset.from_tensor_slices(((test_user_ids, test_product_ids,
 model.fit(train_data, epochs=10, validation_data=val_data)  # Fewer epochs for retraining
 
 # Step 12: Save updated artifacts
-model.save('app/hybrid_recommender_model.keras')
-with open('app/scaler.pkl', 'wb') as file:
+model.save('/app/hybrid_recommender_model.keras')
+with open('/app/scaler.pkl', 'wb') as file:
     pickle.dump(scaler, file)
-with open('app/mlb.pkl', 'wb') as file:
+with open('/app/mlb.pkl', 'wb') as file:
     pickle.dump(mlb, file)
-with open('app/user_id_mapping.pkl', 'wb') as file:
+with open('/app/user_id_mapping.pkl', 'wb') as file:
     pickle.dump(user_id_mapping, file)
-with open('app/product_id_mapping.pkl', 'wb') as file:
+with open('/app/product_id_mapping.pkl', 'wb') as file:
     pickle.dump(product_id_mapping, file)
-with open('app/product_style_dict.pkl', 'wb') as file:
+with open('/app/product_style_dict.pkl', 'wb') as file:
     pickle.dump(product_style_dict, file)
-with open('app/input_shape.pkl', 'wb') as file:
+with open('/app/input_shape.pkl', 'wb') as file:
     pickle.dump(input_shape, file)

@@ -1,11 +1,11 @@
 import pandas as pd
 import ast
 
-data = pd.read_csv('app/products.csv')
+data = pd.read_csv('/app/products.csv')
 
 # Load interactions from CSV
 def load_interactions():
-    return pd.read_csv('app/test_raw_interaction_data.csv', parse_dates=["timestamp"])
+    return pd.read_csv('/app/test_raw_interaction_data.csv', parse_dates=["timestamp"])
 
 def popularity_score(product_id):
     interactions = load_interactions()
